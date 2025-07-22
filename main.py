@@ -1,20 +1,25 @@
 import os
 import re
 from langchain_community.vectorstores import FAISS
+from langchain_community.document_loaders import PyPDFLoader  # <--- Add this import
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama.llms import OllamaLLM
 
+
 # Always use absolute path for pdfs directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 pdfs_directory = os.path.join(BASE_DIR, "pdfs")
 
+
 # Read Ollama base URL from environment variable, default to localhost:11434
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
+
 embeddings = OllamaEmbeddings(model="deepseek-r1:1.5b", base_url=OLLAMA_BASE_URL)
 model = OllamaLLM(model="deepseek-r1:1.5b", base_url=OLLAMA_BASE_URL)
+
 
 template = """
 You are an expert assistant answering questions using only the provided company guideline excerpts.
