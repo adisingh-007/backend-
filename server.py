@@ -3,7 +3,7 @@ from flask_cors import CORS
 import main
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://comply-ai-gy6l.vercel.app"])
 
 db_cache = {}
 
