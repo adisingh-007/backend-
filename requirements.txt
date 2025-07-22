@@ -6,3 +6,4 @@ langchain-text-splitters
 langchain-ollama
 faiss-cpu
 gunicorn
+pypdf
