@@ -1,8 +1,7 @@
 import os
 import re
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
 from langchain_ollama import OllamaEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama.llms import OllamaLLM
@@ -11,11 +10,15 @@ from langchain_ollama.llms import OllamaLLM
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 pdfs_directory = os.path.join(BASE_DIR, "pdfs")
 
-embeddings = OllamaEmbeddings(model="deepseek-r1:1.5b")
-model = OllamaLLM(model="deepseek-r1:1.5b")
+# Read Ollama base URL from environment variable, default to localhost:11434
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+
+embeddings = OllamaEmbeddings(model="deepseek-r1:1.5b", base_url=OLLAMA_BASE_URL)
+model = OllamaLLM(model="deepseek-r1:1.5b", base_url=OLLAMA_BASE_URL)
 
 template = """
 You are an expert assistant answering questions using only the provided company guideline excerpts.
+
 
 INSTRUCTIONS:
 - Your answer must begin with a single, concise markdown heading (## ...). Never use more than one heading.
@@ -27,8 +30,10 @@ INSTRUCTIONS:
 - If the answer is not present in the material, state: "This information is not available in the provided company guidelines."
 - Produce valid markdown only, with one heading and then a bullet/numbered list.
 
+
 Question: {question}
 Context: {context}
+
 
 YOUR OUTPUT:
 """
@@ -44,6 +49,7 @@ def upload_pdf(file):
     print("Saved file:", file_path, "- Exists:", os.path.isfile(file_path))
     return file_path
 
+
 def create_vector_store(file_path):
     """Loads PDF, chunks and indexes it, and returns the vector store."""
     loader = PyPDFLoader(file_path)
@@ -57,6 +63,7 @@ def create_vector_store(file_path):
     chunked_docs = text_splitter.split_documents(documents)
     db = FAISS.from_documents(chunked_docs, embeddings)
     return db
+
 
 def retrieve_docs(db, query, k=4):
     """
@@ -78,6 +85,7 @@ def retrieve_docs(db, query, k=4):
             "section": section
         })
     return enriched
+
 
 def question_pdf(question, documents):
     """
